@@ -3,30 +3,31 @@ import { FeedItem } from '../models/FeedItem';
 import { NextFunction } from 'connect';
 import * as jwt from 'jsonwebtoken';
 import * as AWS from '../../../../aws';
-import * as c from '../../../../config/config';
+import { config } from '../../../../config/config';
+
 
 const router: Router = Router();
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
- //   return next();
-     if (!req.headers || !req.headers.authorization){
-         return res.status(401).send({ message: 'No authorization headers.' });
-     }
-     
- 
-     const token_bearer = req.headers.authorization.split(' ');
-     if(token_bearer.length != 2){
-         return res.status(401).send({ message: 'Malformed token.' });
-     }
-     
-     const token = token_bearer[1];
-     return jwt.verify(token, c.config.jwt.secret , (err, decoded) => {
-       if (err) {
-         return res.status(500).send({ auth: false, message: 'Failed to authenticate.' });
-       }
-       return next();
-     });
- }
+    if (!req.headers || !req.headers.authorization){
+        return res.status(401).send({ message: 'No authorization headers.' });
+    }
+    
+
+    const token_bearer = req.headers.authorization.split(' ');
+    if(token_bearer.length != 2){
+        return res.status(401).send({ message: 'Malformed token.' });
+    }
+    
+    const token = token_bearer[1];
+
+    return jwt.verify(token, config.jwt.secret, (err, decoded) => {
+      if (err) {
+        return res.status(500).send({ auth: false, message: 'Failed to authenticate.' });
+      }
+      return next();
+    });
+}
 
 // Get all feed items
 router.get('/', async (req: Request, res: Response) => {
@@ -39,13 +40,8 @@ router.get('/', async (req: Request, res: Response) => {
     res.send(items);
 });
 
-// Get a specific resource
-router.get('/:id', 
-    async (req: Request, res: Response) => {
-    let { id } = req.params;
-    const item = await FeedItem.findByPk(id);
-    res.send(item);
-});
+//@TODO
+//Add an endpoint to GET a specific resource by Primary Key
 
 // update a specific resource
 router.patch('/:id', 

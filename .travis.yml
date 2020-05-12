@@ -15,12 +15,13 @@ before_install:
   - chmod +x ./kubectl
   - sudo mv ./kubectl /usr/local/bin/kubectl
 
-
-
 install:
-  - docker-compose -f udacity-c3-deployment/docker/docker-compose-build.yaml build --parallel 
+  - docker-compose -f deployment/docker/docker-compose-build.yaml build --parallel 
 
-after_success:
-  - echo "$DOCKER_PASSWORD" | docke login -u "DOCKER_USERNAME" --password-stdin
-  - docker push 164678/reverseproxy
-
+deploy:
+  skip_cleanup: true
+  provider: script
+  script: bash ./deployment/docker_deploy.sh
+  on:
+    branch: master
+  
